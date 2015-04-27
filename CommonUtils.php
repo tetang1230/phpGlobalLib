@@ -608,7 +608,7 @@ class CommonUtils {
     }
     
     
-    public function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {  
+    public static function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {  
         // 动态密匙长度，相同的明文会生成不同密文就是依靠动态密匙  
         $ckey_length = 4;  
           
@@ -668,6 +668,84 @@ class CommonUtils {
             return $keyc.str_replace('=', '', base64_encode($result));  
         }  
      }
+    
+    /** 
+    * @param mixed   $in      待处理字符串 
+    * @param boolean $to_num  是否解密:true解密,false加密 
+    * @param mixed   $pad_up  固定字符串的长度 
+    * @param string  $passKey 密码加密 
+    * 
+    * @return mixed string or long 
+    */
+
+     public static function alphaID($in, $to_num = false, $pad_up = false, $passKey = null) {  
+        $index = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";  
+        if ($passKey !== null) {  
+            // Although this function's purpose is to just make the  
+            // ID short - and not so much secure,  
+            // with this patch by Simon Franz (http://blog.snaky.org/)  
+            // you can optionally supply a password to make it harder  
+            // to calculate the corresponding numeric ID  
+           
+            for ($n = 0; $n<strlen($index); $n++) {  
+                $i[] = substr( $index,$n ,1);  
+            }  
+           
+            $passhash = hash('sha256',$passKey);  
+            $passhash = (strlen($passhash) < strlen($index))  
+              ? hash('sha512',$passKey)  
+              : $passhash;  
+           
+            for ($n=0; $n < strlen($index); $n++) {  
+                $p[] =  substr($passhash, $n ,1);  
+            }  
+           
+            array_multisort($p,  SORT_DESC, $i);  
+            $index = implode($i);  
+        }  
+
+        $base  = strlen($index);  
+       
+        if ($to_num) {  
+            // Digital number  <<--  alphabet letter code  
+            $in  = strrev($in);  
+            $out = 0;  
+            $len = strlen($in) - 1;  
+            for ($t = 0; $t <= $len; $t++) {  
+                $bcpow = bcpow($base, $len - $t);  
+                $out   = $out + strpos($index, substr($in, $t, 1)) * $bcpow;  
+            }  
+           
+            if (is_numeric($pad_up)) {  
+                $pad_up--;  
+                if ($pad_up > 0) {  
+                    $out -= pow($base, $pad_up);  
+                }  
+            }  
+            $out = sprintf('%F', $out);  
+            $out = substr($out, 0, strpos($out, '.'));  
+          } else {  
+            // Digital number  -->>  alphabet letter code  
+            if (is_numeric($pad_up)) {  
+                $pad_up--;  
+                if ($pad_up > 0) {  
+                    $in += pow($base, $pad_up);  
+                }  
+            }  
+           
+            $out = "";  
+            for ($t = floor(log($in, $base)); $t >= 0; $t--) {  
+                  $bcp = bcpow($base, $t);  
+                  $a   = floor($in / $bcp) % $base;  
+                  $out = $out . substr($index, $a, 1);  
+                  $in  = $in - ($a * $bcp);  
+            }  
+            $out = strrev($out); // reverse  
+        }  
+       
+      return $out;  
+    }  
+
 
 }
 //echo CommonUtils::calculateURLTokenSig(47220353, '263f14bce1c49f48c2c80ac960283d50', '262ee59a6ff2c69dd66e26790a8e861f');
