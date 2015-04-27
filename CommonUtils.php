@@ -756,8 +756,18 @@ class CommonUtils {
         return trim(substr(strrchr($filename, '.'), 1, 10));
     }
 
-
-}
+    /**
+     * 检测日期的有效性
+     */
+    function datecheck($ymd, $sep='-') {
+            if(!empty($ymd)) {
+                    list($year, $month, $day) = explode($sep, $ymd);
+                    return checkdate($month, $day, $year);
+            } else {
+                    return FALSE;
+            }   
+        }
+    }
 
 
 //echo CommonUtils::alphaID("12983",false,8,"chester")."\n";
