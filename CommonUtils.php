@@ -744,7 +744,18 @@ class CommonUtils {
         }  
        
       return $out;  
-    }  
+    }
+    
+    /**
+     * 
+     * 获取文件扩展名
+     * 
+     */
+     
+    public function fileext($filename) {
+        return trim(substr(strrchr($filename, '.'), 1, 10));
+    }
+
 
 }
 
