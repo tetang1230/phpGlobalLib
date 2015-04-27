@@ -769,6 +769,98 @@ class CommonUtils {
         }
     }
 
+/*
+ * 基于PHP没有安装 mb_substr 等扩展截取字符串，如果截取中文字则按2个字符计算
+ * @param $string 要截取的字符串
+ * @param $length 要截取的字符数
+ * @param $dot 替换截掉部分的结尾字符串
+ * @return 返回截取后的字符串
+ */
+    public function cutstr($string, $length, $charset = 'utf-8', $dot = '...') {
+        // 如果字符串小于要截取的长度则直接返回
+        // 此处使用strlen获取字符串长度有很大的弊病，比如对字符串“新年快乐”要截取4个中文字符，
+        // 那么必须知道这4个中文字符的字节数，否则返回的字符串可能会是“新年快乐...”
+        if (strlen($string) <= $length) {
+            return $string;
+        }
+    
+        // 转换原字符串中htmlspecialchars
+        $pre = chr(1);
+        $end = chr(1);
+        $string = str_replace ( array ('&amp;', '&quot;', '&lt;', '&gt;' ), array ($pre . '&' . $end, $pre . '"' . $end, $pre . '<' . $end, $pre . '>' . $end ), $string );
+    
+        $strcut = ''; // 初始化返回值
+    
+        // 如果是utf-8编码(这个判断有点不全,有可能是utf8)
+        if (strtolower ( $charset ) == 'utf-8') {
+            // 初始连续循环指针$n,最后一个字位数$tn,截取的字符数$noc
+            $n = $tn = $noc = 0;
+            while ( $n < strlen ( $string ) ) {
+                $t = ord ( $string [$n] );
+    
+                if ($t == 9 || $t == 10 || (32 <= $t && $t <= 126)) {
+                    // 如果是英语半角符号等,$n指针后移1位,$tn最后字是1位
+                    $tn = 1;
+                    $n++;
+                    $noc++;
+                } elseif (194 <= $t && $t <= 223) {
+                    // 如果是二字节字符$n指针后移2位,$tn最后字是2位
+                    $tn = 2;
+                    $n += 2;
+                    $noc += 2;
+                } elseif (224 <= $t && $t <= 239) {
+                    // 如果是三字节(可以理解为中字词),$n后移3位,$tn最后字是3位
+                    $tn = 3;
+                    $n += 3;
+                    $noc += 2;
+                } elseif (240 <= $t && $t <= 247) {
+                    $tn = 4;
+                    $n += 4;
+                    $noc += 2;
+                } elseif (248 <= $t && $t <= 251) {
+                    $tn = 5;
+                    $n += 5;
+                    $noc += 2;
+                } elseif ($t == 252 || $t == 253) {
+                    $tn = 6;
+                    $n += 6;
+                    $noc += 2;
+                } else {
+                    $n++;
+                }
+    
+                // 超过了要取的数就跳出连续循环
+                if ($noc >= $length) {
+                    break;
+                }
+            }
+    
+            // 这个地方是把最后一个字去掉,以备加$dot
+            if ($noc > $length) {
+                $n -= $tn;
+            }
+    
+            $strcut = substr ( $string, 0, $n );
+    
+        } else {
+            // 并非utf-8编码的全角就后移2位
+            for ($i = 0; $i < $length; $i ++) {
+                $strcut .= ord ( $string [$i] ) > 127 ? $string [$i] . $string [++ $i] : $string [$i];
+            }
+        }
+    
+        // 再还原最初的htmlspecialchars
+        $strcut = str_replace( array ($pre . '&' . $end, $pre . '"' . $end, $pre . '<' . $end, $pre . '>' . $end ), array ('&amp;', '&quot;', '&lt;', '&gt;' ), $strcut );
+    
+        $pos = strrpos ( $strcut, chr ( 1 ) );
+        if ($pos !== false) {
+            $strcut = substr ( $strcut, 0, $pos );
+        }
+    
+        return $strcut . $dot; // 最后把截取加上$dot输出
+    }
+}
+
 
 //echo CommonUtils::alphaID("12983",false,8,"chester")."\n";
 //echo CommonUtils::alphaID("jcG2222K",true,8,"chester")."\n";
