@@ -868,6 +868,17 @@ class CommonUtils {
     public static function isemail($email) {
         return strlen($email) > 6 && preg_match("/^[\w\-\.]+@[\w\-\.]+(\.\w+)+$/", $email);
     }
+    
+    /**
+    * 判断一个字符串是否在另一个字符串中存在
+    * @param haystack 待查找的字符串
+    * @param $needls 被查找的字符串
+    * @return 是否存在
+    */
+    public static function strexists($haystack, $needle) {
+        return !(strpos($haystack, $needle) === FALSE);
+    }
+
 
     
 }
