@@ -746,8 +746,11 @@ class CommonUtils {
       return $out;  
     }  
 
-
 }
+
+
+//echo CommonUtils::alphaID("12983",false,8,"chester")."\n";
+//echo CommonUtils::alphaID("jcG2222K",true,8,"chester")."\n";
 //echo CommonUtils::calculateURLTokenSig(47220353, '263f14bce1c49f48c2c80ac960283d50', '262ee59a6ff2c69dd66e26790a8e861f');
 //CommonUtils::checkCommonSig('47220353' . '263f14bce1c49f48c2c80ac960283d50' . '1' . '1' . '1332216378', '111111111');
 //echo $url = CommonUtils::int2Char(61);
