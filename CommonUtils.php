@@ -752,14 +752,14 @@ class CommonUtils {
      * 
      */
      
-    public function fileext($filename) {
+    public static function fileext($filename) {
         return trim(substr(strrchr($filename, '.'), 1, 10));
     }
 
     /**
      * 检测日期的有效性
      */
-    function datecheck($ymd, $sep='-') {
+    public static function datecheck($ymd, $sep='-') {
             if(!empty($ymd)) {
                     list($year, $month, $day) = explode($sep, $ymd);
                     return checkdate($month, $day, $year);
@@ -859,6 +859,17 @@ class CommonUtils {
     
         return $strcut . $dot; // 最后把截取加上$dot输出
     }
+    
+    /**
+    * 检查邮箱是否有效
+    * @param $email 要检查的邮箱
+    * @param 返回结果
+    */
+    public static function isemail($email) {
+        return strlen($email) > 6 && preg_match("/^[\w\-\.]+@[\w\-\.]+(\.\w+)+$/", $email);
+    }
+
+    
 }
 
 
