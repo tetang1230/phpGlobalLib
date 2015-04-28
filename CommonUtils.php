@@ -899,6 +899,18 @@ class CommonUtils {
     	return $string;
     }
 
+
+    /**
+     * 防止xss攻击
+     * 1）htmlspecialchars在php5.4 GBK编码下会出现问题这里做了修复
+     * 2) 如‘& #x5FD7;’这样的16进制的html字符，为了防止这样的字符被错误转译，
+     *    所以又使用了正则进行匹配，把这样的字符又转换回来
+     *   举例：
+     *   <img src="ht&#x74;p&#x3a;/&#x2f;ucenter.51cto.com/avatar.php?uid=4681835&size=middle">
+     *   其实浏览器解析后会变成如下：
+     *   <img src="http://ucenter.51cto.com/avatar.php?uid=4681835&size=middle">
+     *   所以防止这种代码被转义,所以就再转回来
+     */
     public static function chtmlspecialchars($string, $flags = null) {
     	if(is_array($string)) {
     		foreach($string as $key => $val) {
