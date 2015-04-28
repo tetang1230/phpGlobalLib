@@ -880,6 +880,25 @@ class CommonUtils {
     }
 
 
+    /**
+     * 防注入 
+     * 一般用在$_GET, $_POST, $_FILES
+     */
+     
+    public static function caddslashes($string, $force = 1) {
+    	if(is_array($string)) {
+    		$keys = array_keys($string);
+    		foreach($keys as $key) {
+    			$val = $string[$key];
+    			unset($string[$key]);
+    			$string[addslashes($key)] = daddslashes($val, $force);
+    		}
+    	} else {
+    		$string = addslashes($string);
+    	}
+    	return $string;
+    }
+
     
 }
 
