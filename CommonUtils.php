@@ -883,6 +883,9 @@ class CommonUtils {
     /**
      * 防注入 
      * 一般用在$_GET, $_POST, $_FILES
+     * 使用了addslashes()处理后的数据比如chester\'s name在数据库中将以chester's name形式保存
+     * addslashes()起到插入数据不出错的作用，如果此时直接输出的话，数据正常。不需要再用stripslashes()
+     * 应该是mysql特性
      */
      
     public static function caddslashes($string, $force = 1) {
