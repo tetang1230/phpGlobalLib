@@ -2,6 +2,8 @@
 
 class CommonUtils {
     
+    private static $mcrypt_key = 'mcrypt_secret_key';
+    
     static $CACHE = array ();
     
     /**
@@ -939,6 +941,101 @@ class CommonUtils {
     		}
     	}
     	return $string;
+    }
+
+
+    public static function mlib_encrypt($input)
+    {
+        $size = mcrypt_get_block_size('tripledes', 'ecb');
+        $input = self::pkcs5_pad($input, $size);
+        $td = mcrypt_module_open('tripledes', '', 'ecb', '');
+        $key = substr(self::getBytes(self::$mcrypt_key), 0, mcrypt_enc_get_key_size($td));
+        $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+        @mcrypt_generic_init($td, $key, $iv);
+        $data = mcrypt_generic($td, $input);
+        mcrypt_generic_deinit($td);
+        mcrypt_module_close($td);
+        $data = self::getHexString($data);
+
+        return $data;
+    }
+    
+    public static function mlib_decrypt($encrypted)
+    {
+        $encrypted = self::getBytes($encrypted);
+        $td = mcrypt_module_open('tripledes', '', 'ecb', ''); //使用MCRYPT_DES算法,cbc模式
+        $key = substr(self::getBytes(self::$mcrypt_key), 0, mcrypt_enc_get_key_size($td));
+        $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+        $ks = mcrypt_enc_get_key_size($td);
+        @mcrypt_generic_init($td, $key, $iv); //初始处理
+        $decrypted = mdecrypt_generic($td, $encrypted); //解密
+        mcrypt_generic_deinit($td); //结束
+        mcrypt_module_close($td);
+        $decrypted = self::pkcs5_unpad($decrypted);
+
+        return $decrypted;
+    }
+    
+    public static function pkcs5_pad($text, $blocksize)
+    {
+        $pad = $blocksize - (strlen($text) % $blocksize);
+
+        return $text.str_repeat(chr($pad), $pad);
+    }
+    
+    public static function pkcs5_unpad($text)
+    {
+        $pad = ord($text{strlen($text)-1});
+        if ($pad > strlen($text)) {
+            return false;
+        }
+        if (strspn($text, chr($pad), strlen($text) - $pad) != $pad) {
+            return false;
+        }
+
+        return substr($text, 0, -1 * $pad);
+    }
+
+    public static function getBytes($hex)
+    {
+        $string = null;
+        $hex = str_replace(array("\n", "\r", ' '), '', $hex);
+        for ($ix = 0; $ix < strlen($hex); $ix = $ix+2) {
+            $ord = self::toHexValue($hex[$ix], 1)+self::toHexValue($hex[$ix+1]);
+            $string .= chr($ord);
+        }
+
+        return $string;
+    }
+    
+    public static function toHexValue($iChar, $isHigh = 0)
+    {
+        $num = 0;
+        $inChar = ord($iChar);
+        if ($inChar >= ord('0') && $inChar <= ord('9')) {
+            $num = $inChar - ord('0');
+        } elseif ($inChar >= ord('a') && $inChar <= ord('f')) {
+            $num = $inChar - ord('a') + 10;
+        } else {
+            $num = $inChar - ord('A') + 10;
+        }
+        if ($isHigh == 1) {
+            $num = $num << 4;
+        }
+
+        return $num;
+    }
+    
+    public static function getHexString($input)
+    {
+        $str = '';
+        for ($i = 0;$i<strlen($input);$i++) {
+            $byte = strtoupper(dechex(ord($input[$i])));
+            $byte = str_repeat('0', 2-strlen($byte)).$byte;
+            $str .= $byte.'';
+        }
+
+        return $str;
     }
 
     
