@@ -1,7 +1,7 @@
 <?php
 declare(ticks=1);
 /**
- * MultiProcess php 多进程控制 jx
+ * MultiProcess php 多进程控制 
  * 
  */
 class MultiProcess
@@ -134,7 +134,7 @@ class MultiProcess
 
             if(false == $this->canStartChild() && empty($this->childRen))
             {
-                //printf("哈哈结束了\n"); 
+                //printf("结束\n"); 
                 break;
             }
 
