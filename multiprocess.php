@@ -39,7 +39,7 @@ class MultiProcess
     private $processCnt; 
 
     /**
-     * totalStep 总共进程多少步. 每少会走一个进程去处理
+     * totalStep 总共进程多少步. 每步会走一个进程去处理
      * 
      * @var mixed
      * @access private
